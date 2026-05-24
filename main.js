@@ -132,6 +132,9 @@ function onSessionComplete() {
     notification.show();
   }
 
+  // Play sound via renderer
+  mainWindow.webContents.send('play-sound');
+
   mainWindow.webContents.send('session-complete', { isWorkSession });
   mainWindow.webContents.send('time-update', remainingTime);
   mainWindow.webContents.send('stats-update', getStats());
