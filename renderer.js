@@ -101,11 +101,16 @@ window.electronAPI.onTimerState((state) => {
   isWorkSession = state.isWorkSession;
   updateButtonState();
   sessionLabelEl.textContent = isWorkSession ? '工作' : '休息';
+  timerEl.classList.toggle('running', isRunning);
+  timerEl.classList.remove('complete');
 });
 
 window.electronAPI.onSessionComplete((session) => {
   isWorkSession = session.isWorkSession;
   sessionLabelEl.textContent = isWorkSession ? '工作' : '休息';
+  timerEl.classList.remove('running');
+  timerEl.classList.add('complete');
+  setTimeout(() => timerEl.classList.remove('complete'), 600);
 });
 
 window.electronAPI.onStatsUpdate((stats) => {
