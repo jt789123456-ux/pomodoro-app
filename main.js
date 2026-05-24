@@ -17,6 +17,7 @@ let timer = null;
 let remainingTime = 25 * 60;
 let isRunning = false;
 let isWorkSession = true;
+let soundInterval = null;
 
 function getSettings() {
   return {
@@ -48,10 +49,12 @@ function resetStats() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 300,
-    height: 450,
-    resizable: false,
-    maximizable: false,
+    width: 320,
+    height: 480,
+    minWidth: 280,
+    minHeight: 400,
+    resizable: true,
+    maximizable: true,
     minimizable: true,
     closable: true,
     alwaysOnTop: true,
@@ -132,14 +135,15 @@ function onSessionComplete() {
     notification.show();
   }
 
-  // Play sound via renderer
-  mainWindow.webContents.send('play-sound');
+  // Play sound repeatedly until user clicks
+  mainWindow.webContents.send('play-sound-start');
 
   mainWindow.webContents.send('session-complete', { isWorkSession });
   mainWindow.webContents.send('time-update', remainingTime);
   mainWindow.webContents.send('stats-update', getStats());
+  mainWindow.webContents.send('timer-state', { isRunning: false, isWorkSession });
   updateTrayMenu();
-}
+  mainWindow.show();
 
 function registerShortcuts() {
   globalShortcut.register('Space', () => {
@@ -149,8 +153,17 @@ function registerShortcuts() {
   });
 }
 
-ipcMain.on('toggle-timer', toggleTimer);
-ipcMain.on('reset-timer', resetTimer);
+ipcMain.on('toggle-timer', () => {
+  mainWindow.webContents.send('stop-sound');
+  toggleTimer();
+});
+ipcMain.on('reset-timer', () => {
+  mainWindow.webContents.send('stop-sound');
+  resetTimer();
+});
+ipcMain.on('stop-sound', () => {
+  mainWindow.webContents.send('stop-sound');
+});
 ipcMain.handle('get-settings', () => getSettings());
 ipcMain.handle('save-settings', (_, settings) => saveSettings(settings));
 ipcMain.handle('get-stats', () => getStats());
